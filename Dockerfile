@@ -1,13 +1,28 @@
-##
+name: ci
 
-FROM alpine:latest
+on:
+  workflow_dispatch:
 
-WORKDIR /root
-COPY xf.sh /root/xf.sh
-
-RUN set -ex \
-    && apk add --no-cache tzdata openssl ca-certificates \
-    && mkdir -p /etc/v2ray /usr/local/share/v2ray /var/log/v2ray \
-    && chmod +x /root/xf.sh
-
-CMD [ "/root/xf.sh" ]
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      -
+        name: Login to DockerHub
+        uses: docker/login-action@v1 
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_PASS }}
+      -
+        name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: jonesxr/wtg
